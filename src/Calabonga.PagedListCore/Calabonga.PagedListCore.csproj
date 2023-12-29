@@ -11,7 +11,7 @@
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>A simple PagedList implementation for .NET Core (netstandard2.1). Interface with some converters and helpers for IPagedList.</Description>
-		<PackageProjectUrl>htts://www.calabonga.net</PackageProjectUrl>
+		<PackageProjectUrl>https://www.calabonga.net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Calabonga/Calabonga.PagedListCore</RepositoryUrl>
 		<PackageTags>calabonga;paged;pagedlist;list;interface;simple;asnetcore</PackageTags>
 		<PackageReleaseNotes>first release</PackageReleaseNotes>
