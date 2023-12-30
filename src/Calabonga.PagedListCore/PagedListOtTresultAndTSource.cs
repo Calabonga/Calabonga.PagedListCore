@@ -112,7 +112,7 @@ namespace Calabonga.PagedListCore
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="converter">The converter.</param>
-        public PagedList(IPagedList<TResult> source, Func<IList<TResult>, IEnumerable<TResult>> converter)
+        public PagedList(IPagedList<TSource> source, Func<IEnumerable<TSource>, IEnumerable<TResult>> converter)
         {
             PageIndex = source.PageIndex;
             PageSize = source.PageSize;

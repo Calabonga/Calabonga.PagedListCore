@@ -103,7 +103,7 @@ namespace Calabonga.PagedListCore
             PageSize = pageSize;
             IndexFrom = indexFrom;
             TotalCount = count;
-            Items = items;
+            Items = items.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList();
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         }
 
