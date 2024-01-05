@@ -105,7 +105,6 @@ namespace Calabonga.PagedListCore
 
         public PagedList(
             IEnumerable<T> source,
-            Func<IEnumerable<T>, IEnumerable<T>> converter,
             int pageIndex,
             int pageSize,
             int indexFrom,
@@ -115,7 +114,7 @@ namespace Calabonga.PagedListCore
             PageSize = pageSize;
             IndexFrom = indexFrom;
             TotalCount = count;
-            Items = converter(source).ToList();
+            Items = source.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList(); ;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         }
     }
