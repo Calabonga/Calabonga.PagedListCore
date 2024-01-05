@@ -65,7 +65,8 @@ namespace Calabonga.PagedListCore
         /// <param name="pageIndex">The index of the page.</param>
         /// <param name="pageSize">The size of the page.</param>
         /// <param name="indexFrom">The index from.</param>
-        internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize, int indexFrom)
+        /// <param name="totalCount">Total items in collection. Default is null. Will check source to count</param>
+        internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize, int indexFrom, int? totalCount = null)
         {
             if (indexFrom > pageIndex)
             {
@@ -78,7 +79,7 @@ namespace Calabonga.PagedListCore
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 IndexFrom = indexFrom;
-                TotalCount = queryable.Count();
+                TotalCount = totalCount ?? queryable.Count();
                 TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
                 Items = queryable.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList();
             }
@@ -88,23 +89,13 @@ namespace Calabonga.PagedListCore
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 IndexFrom = indexFrom;
-                TotalCount = enumerable.Count;
+                TotalCount = totalCount ?? enumerable.Count;
                 TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
                 Items = enumerable
                     .Skip((PageIndex - IndexFrom) * PageSize)
                     .Take(PageSize)
                     .ToList();
             }
-        }
-
-        public PagedList(List<T> items, int pageIndex, int pageSize, int indexFrom, int count)
-        {
-            PageIndex = pageIndex;
-            PageSize = pageSize;
-            IndexFrom = indexFrom;
-            TotalCount = count;
-            Items = items.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList();
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         }
 
         /// <summary>
