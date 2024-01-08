@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version>1.0.3</Version>
+		<Version>1.0.4</Version>
 		<Company>Calabonga SOFT</Company>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>Calabonga.PagedListCore</Title>
@@ -14,7 +14,7 @@
 		<PackageProjectUrl>https://www.calabonga.net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Calabonga/Calabonga.PagedListCore</RepositoryUrl>
 		<PackageTags>calabonga;paged;pagedlist;list;interface;simple;asnetcore;converters</PackageTags>
-		<PackageReleaseNotes>first release</PackageReleaseNotes>
+		<PackageReleaseNotes>Bug with pages generation fixed</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

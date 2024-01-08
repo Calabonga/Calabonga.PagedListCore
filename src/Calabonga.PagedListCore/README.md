@@ -2,6 +2,11 @@
 
 PagedList implementation for .NET Core (netstandard2.0).
 
+## v1.0.4
+
+* Bux for `ToPagedList()` fixed. Only first page always generated correcty.
+* Some method summaries added/updated.
+
 ## v1.0.3
 
 * Converter created for deserialization with `System.Text.Json`.

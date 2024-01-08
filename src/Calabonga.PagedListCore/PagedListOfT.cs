@@ -103,6 +103,14 @@ namespace Calabonga.PagedListCore
         /// </summary>
         internal PagedList() => Items = Array.Empty<T>();
 
+        /// <summary>
+        /// Creates an instance with predefined parameters.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="indexFrom"></param>
+        /// <param name="count"></param>
         public PagedList(
             IEnumerable<T> source,
             int pageIndex,
@@ -114,7 +122,7 @@ namespace Calabonga.PagedListCore
             PageSize = pageSize;
             IndexFrom = indexFrom;
             TotalCount = count;
-            Items = source.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList(); ;
+            Items = source.ToList();
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         }
     }
