@@ -2,6 +2,11 @@
 
 PagedList implementation for .NET Core (netstandard2.0).
 
+## v2.0.0
+
+* `IndexFrom` removed
+* `PageIndex` calculation refactored
+
 ## v1.0.4
 
 * Bux for `ToPagedList()` fixed. Only first page always generated correcty.

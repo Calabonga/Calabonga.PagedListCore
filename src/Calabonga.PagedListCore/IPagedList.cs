@@ -9,12 +9,6 @@ namespace Calabonga.PagedListCore
     public interface IPagedList<T>
     {
         /// <summary>
-        /// Gets the index start value.
-        /// </summary>
-        /// <value>The index start value.</value>
-        int IndexFrom { get; }
-
-        /// <summary>
         /// Gets the page index (current).
         /// </summary>
         int PageIndex { get; }

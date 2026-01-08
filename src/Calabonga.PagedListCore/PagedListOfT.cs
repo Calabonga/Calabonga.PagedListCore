@@ -35,12 +35,6 @@ namespace Calabonga.PagedListCore
         public int TotalPages { get; private set; }
 
         /// <summary>
-        /// Gets or sets the index from.
-        /// </summary>
-        /// <value>The index from.</value>
-        public int IndexFrom { get; private set; }
-
-        /// <summary>
         /// Gets or sets the items.
         /// </summary>
         /// <value>The items.</value>
@@ -50,13 +44,13 @@ namespace Calabonga.PagedListCore
         /// Gets the has previous page.
         /// </summary>
         /// <value>The has previous page.</value>
-        public bool HasPreviousPage => PageIndex - IndexFrom > 0;
+        public bool HasPreviousPage => PageIndex > 1;
 
         /// <summary>
         /// Gets the has next page.
         /// </summary>
         /// <value>The has next page.</value>
-        public bool HasNextPage => PageIndex - IndexFrom + 1 < TotalPages;
+        public bool HasNextPage => PageIndex + 1 < TotalPages;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PagedList{T}" /> class.
@@ -64,35 +58,26 @@ namespace Calabonga.PagedListCore
         /// <param name="source">The source.</param>
         /// <param name="pageIndex">The index of the page.</param>
         /// <param name="pageSize">The size of the page.</param>
-        /// <param name="indexFrom">The index from.</param>
         /// <param name="totalCount">Total items in collection. Default is null. Will check source to count</param>
-        internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize, int indexFrom, int? totalCount = null)
+        internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize, int? totalCount = null)
         {
-            if (indexFrom > pageIndex)
-            {
-                throw new ArgumentException(
-                    $"indexFrom: {indexFrom} > pageIndex: {pageIndex}, must indexFrom <= pageIndex");
-            }
-
             if (source is IQueryable<T> queryable)
             {
-                PageIndex = pageIndex;
+                PageIndex = pageIndex - 1;
                 PageSize = pageSize;
-                IndexFrom = indexFrom;
                 TotalCount = totalCount ?? queryable.Count();
                 TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-                Items = queryable.Skip((PageIndex - IndexFrom) * PageSize).Take(PageSize).ToList();
+                Items = queryable.Skip(PageIndex * PageSize).Take(PageSize).ToList();
             }
             else
             {
                 var enumerable = source.ToList();
-                PageIndex = pageIndex;
+                PageIndex = pageIndex - 1;
                 PageSize = pageSize;
-                IndexFrom = indexFrom;
                 TotalCount = totalCount ?? enumerable.Count;
                 TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
                 Items = enumerable
-                    .Skip((PageIndex - IndexFrom) * PageSize)
+                    .Skip(PageIndex * PageSize)
                     .Take(PageSize)
                     .ToList();
             }
@@ -109,18 +94,15 @@ namespace Calabonga.PagedListCore
         /// <param name="source"></param>
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
-        /// <param name="indexFrom"></param>
         /// <param name="count"></param>
         public PagedList(
             IEnumerable<T> source,
             int pageIndex,
             int pageSize,
-            int indexFrom,
             int count)
         {
             PageIndex = pageIndex;
             PageSize = pageSize;
-            IndexFrom = indexFrom;
             TotalCount = count;
             Items = source.ToList();
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);

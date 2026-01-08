@@ -35,14 +35,12 @@ namespace Calabonga.PagedListCore
         /// <param name="items"></param>
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
-        /// <param name="indexFrom"></param>
         /// <returns></returns>
         public static IPagedList<T> Create<T>(
             IEnumerable<T> items,
             int pageIndex,
-            int pageSize,
-            int indexFrom)
-            => new PagedList<T>(items, pageIndex, pageSize, indexFrom);
+            int pageSize)
+            => new PagedList<T>(items, pageIndex, pageSize);
 
         /// <summary>
         /// Creates a new instance of &lt;see cref="IPagedList{TResult}"/&gt; from source of &lt;see cref="IPagedList{TSource}"/&gt; instance.
