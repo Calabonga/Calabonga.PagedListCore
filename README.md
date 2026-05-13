@@ -1,6 +1,6 @@
 # Calabonga.PagedListCore
 
-PagedList implementation for .NET Core (netstandard2.0).
+PagedList implementation for .NET Core (netstandard2.0). Nuget [Calabonga.PagedListCore](https://www.nuget.org/packages/Calabonga.PagedListCore)
 
 ## v2.0.0
 
