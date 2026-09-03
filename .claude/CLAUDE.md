@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Обзор
 
 `Calabonga.PagedListCore` — небольшая библиотека постраничной разбивки коллекций для .NET (`netstandard2.1`). Публикуется как NuGet-пакет [Calabonga.PagedListCore](https://www.nuget.org/packages/Calabonga.PagedListCore).
-Решение — библиотека + проект unit-тестов (`tests/Calabonga.PagedListCore.Tests`, xUnit, `net8.0`, `IsPackable=false`).
+Решение — библиотека + проект unit-тестов (`tests/Calabonga.PagedListCore.Tests`, xUnit, `net10.0`, `IsPackable=false`).
 
 Дополнительные правила проекта подключаются автоматически из `.claude/rules/` (`code-styles.md` — стиль C#, `workflow.md` — рабочий процесс). Не дублируй их содержимое здесь.
 
