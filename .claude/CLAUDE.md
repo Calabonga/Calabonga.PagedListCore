@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Обзор
 
 `Calabonga.PagedListCore` — небольшая библиотека постраничной разбивки коллекций для .NET (`netstandard2.1`). Публикуется как NuGet-пакет [Calabonga.PagedListCore](https://www.nuget.org/packages/Calabonga.PagedListCore).
-Решение — библиотека + проект unit-тестов (`tests/Calabonga.PagedListCore.Tests`, xUnit, `net10.0`, `IsPackable=false`).
+Решение — библиотека + проект unit-тестов (`tests/Calabonga.PagedListCore.Tests`, `xunit.v3`, `net10.0`, `IsPackable=false`).
 
 Дополнительные правила проекта подключаются автоматически из `.claude/rules/` (`code-styles.md` — стиль C#, `workflow.md` — рабочий процесс). Не дублируй их содержимое здесь.
 
@@ -22,7 +22,7 @@ dotnet pack  src/Calabonga.PagedListCore.slnx -c Release -o ./Package
 
 `dotnet build` при сборке автоматически генерирует `.nupkg` (`GeneratePackageOnBuild=True`). `dotnet pack` по решению собирает **только** пакет библиотеки — тестовый проект помечен `IsPackable=false`.
 
-Запуск одного теста: `dotnet test src/Calabonga.PagedListCore.slnx --filter "FullyQualifiedName~PagedListTests.MiddlePage_HasBothNeighbours"`.
+Тесты на `xunit.v3` + Microsoft.Testing.Platform. `dotnet test` работает благодаря `global.json` (`test.runner = Microsoft.Testing.Platform`); без него .NET 10 SDK падает на удалённом VSTest-таргете. Запуск одного теста: `dotnet test src/Calabonga.PagedListCore.slnx --filter "FullyQualifiedName~PagedListTests.MiddlePage_HasBothNeighbours"`.
 
 CI (`.github/workflows/main.yml`) на каждый push в `main` собирает Release, пакует и пушит пакет в nuget.org (`--skip-duplicate`). Раннер — `windows-latest`, SDK — .NET 10. Отдельного шага `dotnet test` в CI нет — тесты гоняй локально перед фиксацией.
 

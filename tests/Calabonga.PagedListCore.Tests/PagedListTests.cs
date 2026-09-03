@@ -13,11 +13,7 @@ public sealed class PagedListTests
     private static IEnumerable<int> AsSource(IEnumerable<int> data, bool asQueryable)
         => asQueryable ? data.AsQueryable() : data.ToList();
 
-    public static IEnumerable<object[]> SourceKinds() => new[]
-    {
-        new object[] { false },
-        new object[] { true },
-    };
+    public static TheoryData<bool> SourceKinds() => new() { false, true };
 
     // 12 items, page size 5 => pages: [1..5], [6..10], [11,12]
 
