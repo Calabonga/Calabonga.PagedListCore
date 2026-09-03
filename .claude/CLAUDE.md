@@ -24,7 +24,7 @@ dotnet pack  src/Calabonga.PagedListCore.slnx -c Release -o ./Package
 
 Тесты на `xunit.v3` + Microsoft.Testing.Platform. `dotnet test` работает благодаря `global.json` (`test.runner = Microsoft.Testing.Platform`); без него .NET 10 SDK падает на удалённом VSTest-таргете. Запуск одного теста: `dotnet test src/Calabonga.PagedListCore.slnx --filter "FullyQualifiedName~PagedListTests.MiddlePage_HasBothNeighbours"`.
 
-CI (`.github/workflows/main.yml`) на каждый push в `main` собирает Release, пакует и пушит пакет в nuget.org (`--skip-duplicate`). Раннер — `windows-latest`, SDK — .NET 10. Отдельного шага `dotnet test` в CI нет — тесты гоняй локально перед фиксацией.
+CI (`.github/workflows/main.yml`) на каждый push в `main`: restore → build → test → pack → push в nuget.org (`--skip-duplicate`). Раннер — `windows-latest`, SDK — .NET 10. Упавший `dotnet test` останавливает публикацию.
 
 ## Архитектура
 
