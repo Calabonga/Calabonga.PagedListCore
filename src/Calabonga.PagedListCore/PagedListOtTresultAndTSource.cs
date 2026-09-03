@@ -1,116 +1,63 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Calabonga.PagedListCore;
 
 /// <summary>
-/// Provides the implementation of the <see cref="IPagedList{T}"/> and converter.
+/// An <see cref="IPagedList{TResult}"/> projection over an existing <see cref="IPagedList{TSource}"/>:
+/// page metadata is copied verbatim and only the items are converted. Page numbers are 1-based.
 /// </summary>
-/// <typeparam name="TSource">The type of the source.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
+/// <typeparam name="TSource">The type of the source items.</typeparam>
+/// <typeparam name="TResult">The type of the projected items.</typeparam>
 internal class PagedList<TSource, TResult> : IPagedList<TResult>
 {
     /// <summary>
-    /// Gets the index of the page.
+    /// Gets the 1-based index of the current page.
     /// </summary>
-    /// <value>The index of the page.</value>
     public int PageIndex { get; }
 
     /// <summary>
     /// Gets the size of the page.
     /// </summary>
-    /// <value>The size of the page.</value>
     public int PageSize { get; }
 
     /// <summary>
-    /// Gets the total count.
+    /// Gets the total count of items across all pages.
     /// </summary>
-    /// <value>The total count.</value>
     public int TotalCount { get; }
 
     /// <summary>
-    /// Gets the total pages.
+    /// Gets the total number of pages.
     /// </summary>
-    /// <value>The total pages.</value>
     public int TotalPages { get; }
 
     /// <summary>
-    /// Gets the items.
+    /// Gets the projected items of the current page.
     /// </summary>
-    /// <value>The items.</value>
     public IList<TResult> Items { get; }
 
     /// <summary>
-    /// Gets the has previous page.
+    /// Gets a value indicating whether a page exists before the current one.
     /// </summary>
-    /// <value>The has previous page.</value>
     public bool HasPreviousPage => PageIndex > 1;
 
     /// <summary>
-    /// Gets the has next page.
+    /// Gets a value indicating whether a page exists after the current one.
     /// </summary>
-    /// <value>The has next page.</value>
-    public bool HasNextPage => PageIndex + 1 < TotalPages;
+    public bool HasNextPage => PageIndex < TotalPages;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PagedList{TSource, TResult}" /> class.
+    /// Initializes a new instance of the <see cref="PagedList{TSource, TResult}" /> class
+    /// by projecting the items of <paramref name="source"/>.
     /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="converter">The converter.</param>
-    /// <param name="pageIndex">The index of the page.</param>
-    /// <param name="pageSize">The size of the page.</param>
-    /// <param name="indexFrom">The index from.</param>
-    public PagedList
-    (
-        IEnumerable<TSource> source,
-        Func<IEnumerable<TSource>, IEnumerable<TResult>> converter,
-        int pageIndex,
-        int pageSize,
-        int indexFrom)
-    {
-        if (indexFrom > pageIndex)
-        {
-            throw new ArgumentException(
-                $"indexFrom: {indexFrom} > pageIndex: {pageIndex}, must indexFrom <= pageIndex");
-        }
-
-        if (source is IQueryable<TSource> queryable)
-        {
-            PageIndex = pageIndex;
-            PageSize = pageSize;
-            TotalCount = queryable.Count();
-            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
-            var items = queryable.Skip(PageIndex * PageSize).Take(PageSize).ToArray();
-
-            Items = new List<TResult>(converter(items));
-        }
-        else
-        {
-            PageIndex = pageIndex;
-            PageSize = pageSize;
-            TotalCount = source.Count();
-            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
-            var items = source.Skip(PageIndex * PageSize).Take(PageSize).ToArray();
-
-            Items = new List<TResult>(converter(items));
-        }
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PagedList{TSource, TResult}" /> class.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="converter">The converter.</param>
+    /// <param name="source">The source paged list.</param>
+    /// <param name="converter">Projects the current page items to <typeparamref name="TResult"/>.</param>
     public PagedList(IPagedList<TSource> source, Func<IEnumerable<TSource>, IEnumerable<TResult>> converter)
     {
         PageIndex = source.PageIndex;
         PageSize = source.PageSize;
         TotalCount = source.TotalCount;
         TotalPages = source.TotalPages;
-
         Items = new List<TResult>(converter(source.Items));
     }
 }

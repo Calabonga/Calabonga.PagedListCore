@@ -9,7 +9,7 @@ namespace Calabonga.PagedListCore;
 public interface IPagedList<T>
 {
     /// <summary>
-    /// Gets the page index (current).
+    /// Gets the 1-based index of the current page (the first page is <c>1</c>).
     /// </summary>
     int PageIndex { get; }
 
