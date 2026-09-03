@@ -2,6 +2,14 @@
 
 PagedList implementation for .NET Core (netstandard2.1). Nuget [Calabonga.PagedListCore](https://www.nuget.org/packages/Calabonga.PagedListCore)
 
+## v3.0.0
+
+* **Breaking:** `PageIndex` is now 1-based in every constructor (the internal `Skip`/`Take` path previously exposed a 0-based value).
+* `HasPreviousPage` / `HasNextPage` off-by-one fixed — the second page now reports `HasPreviousPage == true`, the second-to-last reports `HasNextPage == true`.
+* Argument validation added: `pageIndex >= 1`, `pageSize >= 1`, `count >= 0` throw `ArgumentOutOfRangeException`.
+* Removed the unreachable `PagedList<TSource, TResult>` constructor with the leftover `indexFrom` parameter.
+* Unit test project added (`tests/Calabonga.PagedListCore.Tests`).
+
 ## v2.0.0
 
 * `IndexFrom` removed

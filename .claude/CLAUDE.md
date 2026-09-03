@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Обзор
 
 `Calabonga.PagedListCore` — небольшая библиотека постраничной разбивки коллекций для .NET (`netstandard2.1`). Публикуется как NuGet-пакет [Calabonga.PagedListCore](https://www.nuget.org/packages/Calabonga.PagedListCore).
-Решение состоит из одного проекта; тестового проекта в решении нет.
+Решение — библиотека + проект unit-тестов (`tests/Calabonga.PagedListCore.Tests`, xUnit, `net8.0`, `IsPackable=false`).
 
 Дополнительные правила проекта подключаются автоматически из `.claude/rules/` (`code-styles.md` — стиль C#, `workflow.md` — рабочий процесс). Не дублируй их содержимое здесь.
 
@@ -16,40 +16,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 dotnet restore src/Calabonga.PagedListCore.slnx
 dotnet build src/Calabonga.PagedListCore.slnx -c Release
+dotnet test  src/Calabonga.PagedListCore.slnx -c Release
 dotnet pack  src/Calabonga.PagedListCore.slnx -c Release -o ./Package
 ```
 
-`dotnet build` при сборке автоматически генерирует `.nupkg` (`GeneratePackageOnBuild=True`).
+`dotnet build` при сборке автоматически генерирует `.nupkg` (`GeneratePackageOnBuild=True`). `dotnet pack` по решению собирает **только** пакет библиотеки — тестовый проект помечен `IsPackable=false`.
 
-CI (`.github/workflows/main.yml`) на каждый push в `main` собирает Release, пакует и пушит пакет в nuget.org (`--skip-duplicate`). Раннер — `windows-latest`, SDK — .NET 10. Тесты в CI не запускаются (тестового проекта нет).
+Запуск одного теста: `dotnet test src/Calabonga.PagedListCore.slnx --filter "FullyQualifiedName~PagedListTests.MiddlePage_HasBothNeighbours"`.
 
-Проекта с unit-тестами в решении нет. Если задача требует тестов — спроси пользователя, нужно ли добавить тестовый проект (он в NuGet-пакет и в CI не входит).
+CI (`.github/workflows/main.yml`) на каждый push в `main` собирает Release, пакует и пушит пакет в nuget.org (`--skip-duplicate`). Раннер — `windows-latest`, SDK — .NET 10. Отдельного шага `dotnet test` в CI нет — тесты гоняй локально перед фиксацией.
 
 ## Архитектура
 
-Четыре файла в `src/Calabonga.PagedListCore/`, все в namespace `Calabonga.PagedListCore`:
+Файлы в `src/Calabonga.PagedListCore/`, все в namespace `Calabonga.PagedListCore`:
 
-- **`IPagedList.cs`** — `IPagedList<T>`: контракт страницы  (`PageIndex`, `PageSize`, `TotalCount`, `TotalPages`, `Items`, `HasPreviousPage`, `HasNextPage`). Единственный публичный тип, на который завязаны потребители.
+- **`IPagedList.cs`** — `IPagedList<T>`: контракт страницы (`PageIndex`, `PageSize`, `TotalCount`, `TotalPages`, `Items`, `HasPreviousPage`, `HasNextPage`). Единственный публичный тип, на который завязаны потребители.
 
-- **`PagedListOfT.cs`** — `public class PagedList<T> : IPagedList<T>`, основная реализация. Два пути создания:
-  - `internal` конструкторы принимают **полный** `IEnumerable<T>`/`IQueryable<T>` и сами делают `Skip/Take`. Для `IQueryable` считают `Count()` в БД, если `totalCount` не передан. Здесь `PageIndex` сохраняется как `pageIndex - 1` (переданный индекс считается 1-базовым, хранится 0-базовым). 
-  - `public` конструктор `(source, pageIndex, pageSize, count)` принимает **уже отобранную** страницу и готовый `count`; `PageIndex` сохраняется как есть, без сдвига. Используй его, когда пагинация уже выполнена на стороне вызова.
+- **`PagedListHelper.cs`** — `internal static`, общая арифметика: `EnsureValidArguments` (валидация `pageIndex`/`pageSize`), `GetSkipCount`, `GetTotalPages`. Все вычисляющие конструкторы обязаны идти через него, чтобы пути создания не разошлись.
+
+- **`PagedListOfT.cs`** — `public class PagedList<T> : IPagedList<T>`, основная реализация. Три конструктора:
+  - `internal (source, pageIndex, pageSize, totalCount = null)` — принимает **полный** `IEnumerable<T>`/`IQueryable<T>` и сам делает `Skip/Take`. Для `IQueryable` считает `Count()` в БД, если `totalCount` не передан.
+  - `internal ()` — пустой результат-заглушка (`PageIndex = 1`, `PageSize = 0`, всё остальное — 0/пусто).
+  - `public (source, pageIndex, pageSize, count)` — принимает **уже отобранную** страницу и готовый `count`. Используй, когда пагинация уже выполнена на стороне вызова.
+  - `PageIndex` — **1-базовый во всех конструкторах** (первая страница = 1). `Skip` считается как `(pageIndex - 1) * pageSize` внутри, наружу 0-базовое значение не протекает.
 
 - **`PagedList.cs`** — `public static class PagedList`, точка входа фабрики: `Empty<T>()`, `Create<T>(items, pageIndex, pageSize)`,
   `From<TSource,TResult>(source, converter)` и `Create<TSource,TResult>(source, converter)` (последние два — синонимы).
 
-- **`PagedListOtTresultAndTSource.cs`** — `internal class PagedList<TSource, TResult> : IPagedList<TResult>`, адаптер проекции: оборачивает существующий `IPagedList<TSource>` (или сырой источник) и прогоняет его `Items` через `Func<IEnumerable<TSource>, IEnumerable<TResult>>`, сохраняя метаданные страницы. Создаётся только через фабрику `PagedList.From/Create`.
+- **`PagedListOtTresultAndTSource.cs`** — `internal class PagedList<TSource, TResult> : IPagedList<TResult>`, адаптер проекции: оборачивает существующий `IPagedList<TSource>`, копирует метаданные страницы и прогоняет `Items` через `Func<IEnumerable<TSource>, IEnumerable<TResult>>`. Создаётся только через фабрику `PagedList.From/Create`.
 
 ### Замечания по семантике индексов
 
-- `HasPreviousPage => PageIndex > 1`, `HasNextPage => PageIndex + 1 < TotalPages`.
-  Эти выражения предполагают конкретную базу индексации; при любой правке
-  конструкторов `PagedList<T>` проверяй согласованность `PageIndex` во всех трёх
-  путях создания (два `internal` + один `public`) и в обоих флагах.
-- Исторические баги в этой библиотеке касались именно расчёта страниц
-  (см. changelog в `README.md`, разделы v1.0.4 и v2.0.0). Любое изменение логики
-  `Skip/Take`/`TotalPages` покрывай тестами вручную для первой, средней и
-  последней страницы.
+- `PageIndex` 1-базовый. Флаги: `HasPreviousPage => PageIndex > 1`, `HasNextPage => PageIndex < TotalPages`. При правке конструкторов держи это соглашение единым во всех путях создания и проверяй оба флага.
+- `TotalPages == 0` при `TotalCount <= 0` (см. `PagedListHelper.GetTotalPages`).
+- Исторические баги касались именно расчёта страниц (changelog `README.md`, v1.0.4 / v2.0.0 / v3.0.0). Любое изменение `Skip/Take`/`TotalPages`/флагов покрывай тестами для первой, средней, предпоследней, последней, единственной и пустой страницы (`tests/Calabonga.PagedListCore.Tests`).
 
 ## Версионирование и changelog
 

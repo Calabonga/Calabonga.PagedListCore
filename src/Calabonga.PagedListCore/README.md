@@ -2,6 +2,13 @@
 
 PagedList implementation for .NET Core (netstandard2.1).
 
+## v3.0.0
+
+* **Breaking:** `PageIndex` is now 1-based in every constructor.
+* `HasPreviousPage` / `HasNextPage` off-by-one fixed.
+* Argument validation added: `pageIndex >= 1`, `pageSize >= 1`, `count >= 0`.
+* Removed the unreachable `PagedList<TSource, TResult>` constructor with the leftover `indexFrom` parameter.
+
 ## v1.0.4
 
 * Bux for `ToPagedList()` fixed. Only first page always generated correcty.
