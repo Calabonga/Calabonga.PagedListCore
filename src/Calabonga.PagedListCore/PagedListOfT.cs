@@ -6,105 +6,123 @@ namespace Calabonga.PagedListCore;
 
 /// <summary>
 /// Represents the default implementation of the <see cref="IPagedList{T}"/> interface.
+/// Page numbers are 1-based: the first page is <c>1</c>.
 /// </summary>
 /// <typeparam name="T">The type of the data to page</typeparam>
 public class PagedList<T> : IPagedList<T>
 {
     /// <summary>
-    /// Gets or sets the index of the page.
+    /// Gets the 1-based index of the current page.
     /// </summary>
-    /// <value>The index of the page.</value>
-    public int PageIndex { get; private set; }
+    public int PageIndex { get; }
 
     /// <summary>
-    /// Gets or sets the size of the page.
+    /// Gets the size of the page.
     /// </summary>
-    /// <value>The size of the page.</value>
-    public int PageSize { get; private set; }
+    public int PageSize { get; }
 
     /// <summary>
-    /// Gets or sets the total count.
+    /// Gets the total count of items across all pages.
     /// </summary>
-    /// <value>The total count.</value>
-    public int TotalCount { get; private set; }
+    public int TotalCount { get; }
 
     /// <summary>
-    /// Gets or sets the total pages.
+    /// Gets the total number of pages.
     /// </summary>
-    /// <value>The total pages.</value>
-    public int TotalPages { get; private set; }
+    public int TotalPages { get; }
 
     /// <summary>
-    /// Gets or sets the items.
+    /// Gets the items of the current page.
     /// </summary>
-    /// <value>The items.</value>
-    public IList<T> Items { get; private set; }
+    public IList<T> Items { get; }
 
     /// <summary>
-    /// Gets the has previous page.
+    /// Gets a value indicating whether a page exists before the current one.
     /// </summary>
-    /// <value>The has previous page.</value>
     public bool HasPreviousPage => PageIndex > 1;
 
     /// <summary>
-    /// Gets the has next page.
+    /// Gets a value indicating whether a page exists after the current one.
     /// </summary>
-    /// <value>The has next page.</value>
-    public bool HasNextPage => PageIndex + 1 < TotalPages;
+    public bool HasNextPage => PageIndex < TotalPages;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PagedList{T}" /> class.
+    /// Initializes a new instance of the <see cref="PagedList{T}" /> class from a full,
+    /// not-yet-paged source. The requested page is sliced out with <c>Skip</c>/<c>Take</c>.
     /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="pageIndex">The index of the page.</param>
+    /// <param name="source">The full source collection.</param>
+    /// <param name="pageIndex">The 1-based page number to take.</param>
     /// <param name="pageSize">The size of the page.</param>
-    /// <param name="totalCount">Total items in collection. Default is null. Will check source to count</param>
+    /// <param name="totalCount">
+    /// Total items in the collection. When <c>null</c>, the count is taken from <paramref name="source"/>.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="pageIndex"/> or <paramref name="pageSize"/> is less than 1.
+    /// </exception>
     internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize, int? totalCount = null)
     {
+        PagedListHelper.EnsureValidArguments(pageIndex, pageSize);
+
+        PageIndex = pageIndex;
+        PageSize = pageSize;
+
+        var skip = PagedListHelper.GetSkipCount(pageIndex, pageSize);
+
         if (source is IQueryable<T> queryable)
         {
-            PageIndex = pageIndex - 1;
-            PageSize = pageSize;
             TotalCount = totalCount ?? queryable.Count();
-            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-            Items = queryable.Skip(PageIndex * PageSize).Take(PageSize).ToList();
+            Items = queryable.Skip(skip).Take(pageSize).ToList();
         }
         else
         {
             var enumerable = source.ToList();
-            PageIndex = pageIndex - 1;
-            PageSize = pageSize;
             TotalCount = totalCount ?? enumerable.Count;
-            TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-            Items = enumerable
-                .Skip(PageIndex * PageSize)
-                .Take(PageSize)
-                .ToList();
+            Items = enumerable.Skip(skip).Take(pageSize).ToList();
         }
+
+        TotalPages = PagedListHelper.GetTotalPages(TotalCount, pageSize);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PagedList{T}" /> class.
+    /// Initializes a new empty instance of the <see cref="PagedList{T}" /> class.
     /// </summary>
-    internal PagedList() => Items = Array.Empty<T>();
+    internal PagedList()
+    {
+        PageIndex = 1;
+        PageSize = 0;
+        TotalCount = 0;
+        TotalPages = 0;
+        Items = Array.Empty<T>();
+    }
 
     /// <summary>
-    /// Creates an instance with predefined parameters.
+    /// Initializes a new instance of the <see cref="PagedList{T}" /> class from an already-paged
+    /// slice: <paramref name="source"/> is stored as-is and only the metadata is computed.
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="pageIndex"></param>
-    /// <param name="pageSize"></param>
-    /// <param name="count"></param>
+    /// <param name="source">The items of the current page (already sliced by the caller).</param>
+    /// <param name="pageIndex">The 1-based page number of the slice.</param>
+    /// <param name="pageSize">The size of the page.</param>
+    /// <param name="count">The total number of items across all pages.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="pageIndex"/> or <paramref name="pageSize"/> is less than 1, or <paramref name="count"/> is negative.
+    /// </exception>
     public PagedList(
         IEnumerable<T> source,
         int pageIndex,
         int pageSize,
         int count)
     {
+        PagedListHelper.EnsureValidArguments(pageIndex, pageSize);
+
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Total count cannot be negative.");
+        }
+
         PageIndex = pageIndex;
         PageSize = pageSize;
         TotalCount = count;
+        TotalPages = PagedListHelper.GetTotalPages(count, pageSize);
         Items = source.ToList();
-        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
     }
 }
